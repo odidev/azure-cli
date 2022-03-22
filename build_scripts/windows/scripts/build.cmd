@@ -136,18 +136,19 @@ for /f %%f in ('dir /b /s *.pyc') do (
     set PARENT_DIR=%%~df%%~pf..
     echo !PARENT_DIR! | findstr /C:\Lib\site-packages\pip\ 1>nul
     if !errorlevel! neq  0 (
-        :: Only take the file name without 'pyc' extension: e.g., (same below) __init__.cpython-310
+        REM double colon (::) should not be used in a block, so we use REM
+        REM Only take the file name without 'pyc' extension: e.g., (same below) __init__.cpython-310
         set FILENAME=%%~nf
-        :: Truncate the '.cpython-310' postfix which is 12 chars long: __init__
-        :: https://stackoverflow.com/a/636391/2199657
+        REM Truncate the '.cpython-310' postfix which is 12 chars long: __init__
+        REM https://stackoverflow.com/a/636391/2199657
         set BASE_FILENAME=!FILENAME:~0,-12!
-        :: __init__.pyc
+        REM __init__.pyc
         set pyc=!BASE_FILENAME!.pyc
-        :: Delete ..\__init__.py
+        REM Delete ..\__init__.py
         del !PARENT_DIR!\!BASE_FILENAME!.py
-        :: Copy to ..\__init__.pyc
+        REM Copy to ..\__init__.pyc
         copy %%~f !PARENT_DIR!\!pyc! >nul
-        :: Delete __init__.pyc
+        REM Delete __init__.pyc
         del %%~f
     ) ELSE (
         echo --SKIP !PARENT_DIR! under pip
