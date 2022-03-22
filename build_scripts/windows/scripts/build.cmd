@@ -132,6 +132,7 @@ copy %REPO_ROOT%\NOTICE.txt %BUILDING_DIR%
 :: Remove .py and only deploy .pyc files
 pushd %BUILDING_DIR%\Lib\site-packages
 for /f %%f in ('dir /b /s *.pyc') do (
+    echo processing %%f
     set PARENT_DIR=%%~df%%~pf..
     echo !PARENT_DIR! | findstr /C:\Lib\site-packages\pip\ 1>nul
     if !errorlevel! neq  0 (
