@@ -1,5 +1,9 @@
 @echo off
 SetLocal EnableDelayedExpansion
+
+REM Double colon :: should not be used in parentheses blocks, so we use REM.
+REM See https://stackoverflow.com/a/12407934/2199657
+
 echo build a msi installer using local cli sources and python executables. You need to have curl.exe, unzip.exe and msbuild.exe available under PATH
 echo.
 
@@ -15,10 +19,10 @@ set WIX_DOWNLOAD_URL="https://azurecliprod.blob.core.windows.net/msi/wix310-bina
 set PYTHON_DOWNLOAD_URL="https://www.python.org/ftp/python/3.10.3/python-3.10.3-embed-win32.zip"
 set PROPAGATE_ENV_CHANGE_DOWNLOAD_URL="https://azurecliprod.blob.core.windows.net/util/propagate_env_change.zip"
 
-:: https://pip.pypa.io/en/stable/installation/#get-pip-py
+REM https://pip.pypa.io/en/stable/installation/#get-pip-py
 set GET_PIP_DOWNLOAD_URL="https://bootstrap.pypa.io/get-pip.py"
 
-:: Set up the output directory and temp. directories
+REM Set up the output directory and temp. directories
 echo Cleaning previous build artifacts...
 set OUTPUT_DIR=%~dp0..\out
 if exist %OUTPUT_DIR% rmdir /s /q %OUTPUT_DIR%
@@ -34,9 +38,9 @@ set PROPAGATE_ENV_CHANGE_DIR=%~dp0..\propagate_env_change
 
 set REPO_ROOT=%~dp0..\..\..
 
-::reset working folders
+REM reset working folders
 if exist %BUILDING_DIR% rmdir /s /q %BUILDING_DIR%
-::rmdir always returns 0, so check folder's existence
+REM rmdir always returns 0, so check folder's existence
 if exist %BUILDING_DIR% (
     echo Failed to delete %BUILDING_DIR%.
     goto ERROR
@@ -54,7 +58,7 @@ if exist %REPO_ROOT%\privates (
     copy %REPO_ROOT%\privates\*.whl %TEMP_SCRATCH_FOLDER%
 )
 
-::ensure wix is available
+REM ensure wix is available
 if exist %WIX_DIR% (
     echo Using existing Wix at %WIX_DIR%
 )
@@ -70,7 +74,7 @@ if not exist %WIX_DIR% (
     popd
 )
 
-::ensure Python is available
+REM ensure Python is available
 if exist %PYTHON_DIR% (
     echo Using existing Python at %PYTHON_DIR%
 )
@@ -86,9 +90,9 @@ if not exist %PYTHON_DIR% (
     del python-archive.zip
     echo Python downloaded and extracted successfully
 
-    :: Delete _pth file so that Lib\site-packages is included in sys.path
-    :: https://github.com/pypa/pip/issues/4207#issuecomment-297396913
-    :: https://docs.python.org/3.10/using/windows.html#finding-modules
+    REM Delete _pth file so that Lib\site-packages is included in sys.path
+    REM https://github.com/pypa/pip/issues/4207#issuecomment-297396913
+    REM https://docs.python.org/3.10/using/windows.html#finding-modules
     del python*._pth
 
     echo Installing pip
@@ -129,14 +133,13 @@ copy %REPO_ROOT%\build_scripts\windows\resources\CLI_LICENSE.rtf %BUILDING_DIR%
 copy %REPO_ROOT%\build_scripts\windows\resources\ThirdPartyNotices.txt %BUILDING_DIR%
 copy %REPO_ROOT%\NOTICE.txt %BUILDING_DIR%
 
-:: Remove .py and only deploy .pyc files
+REM Remove .py and only deploy .pyc files
 pushd %BUILDING_DIR%\Lib\site-packages
 for /f %%f in ('dir /b /s *.pyc') do (
     echo processing %%f
     set PARENT_DIR=%%~df%%~pf..
     echo !PARENT_DIR! | findstr /C:\Lib\site-packages\pip\ 1>nul
     if !errorlevel! neq  0 (
-        REM double colon (::) should not be used in a block, so we use REM
         REM Only take the file name without 'pyc' extension: e.g., (same below) __init__.cpython-310
         set FILENAME=%%~nf
         REM Truncate the '.cpython-310' postfix which is 12 chars long: __init__
@@ -156,19 +159,19 @@ for /f %%f in ('dir /b /s *.pyc') do (
 )
 popd
 
-:: Remove __pycache__
+REM Remove __pycache__
 echo remove pycache
 for /d /r %BUILDING_DIR%\Lib\site-packages\pip %%d in (__pycache__) do (
     if exist %%d rmdir /s /q "%%d"
 )
 
-:: Remove aio
+REM Remove aio
 echo remove aio
 for /d /r %BUILDING_DIR%\Lib\site-packages\azure\mgmt %%d in (aio) do (
     if exist %%d rmdir /s /q "%%d"
 )
 
-:: Remove dist-info
+REM Remove dist-info
 echo remove dist-info
 pushd %BUILDING_DIR%\Lib\site-packages
 for /d %%d in ("azure*.dist-info") do (
@@ -178,7 +181,7 @@ popd
 
 if %errorlevel% neq 0 goto ERROR
 
-::ensure propagate_env_change.exe is available
+REM ensure propagate_env_change.exe is available
 if exist "%PROPAGATE_ENV_CHANGE_DIR%\propagate_env_change.exe" (
     echo Using existing propagate_env_change.exe at %PROPAGATE_ENV_CHANGE_DIR%
 ) else (
