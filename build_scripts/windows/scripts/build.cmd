@@ -84,20 +84,20 @@ if not exist %PYTHON_DIR% (
     unzip -q python-archive.zip
     if %errorlevel% neq 0 goto ERROR
     del python-archive.zip
-    echo Python downloaded and extracted successfully.
+    echo Python downloaded and extracted successfully
+
+    :: Delete _pth file so that Lib\site-packages is included in sys.path
+    :: https://github.com/pypa/pip/issues/4207#issuecomment-297396913
+    :: https://docs.python.org/3.10/using/windows.html#finding-modules
+    del python*._pth
 
     echo Installing pip
     curl -o get-pip.py %GET_PIP_DOWNLOAD_URL%
     %PYTHON_DIR%\python.exe get-pip.py
     del get-pip.py
-    echo Pip set up successful.
+    echo Pip set up successful
 
-    :: Delete _pth file so that Lib\site-packages is included in sys.path
-    :: https://github.com/pypa/pip/issues/4207#issuecomment-297396913
-    :: https://docs.python.org/3.10/using/windows.html#finding-modules
-    del python310._pth
     dir .
-
     popd
 )
 set PYTHON_EXE=%PYTHON_DIR%\python.exe
@@ -135,11 +135,18 @@ for /f %%f in ('dir /b /s *.pyc') do (
     set PARENT_DIR=%%~df%%~pf..
     echo !PARENT_DIR! | findstr /C:\Lib\site-packages\pip\ 1>nul
     if !errorlevel! neq  0 (
+        :: Only take the file name: e.g., (same below) __init__.cpython-310
         set FILENAME=%%~nf
-        set BASE_FILENAME=!FILENAME:~0,-11!
+        :: Truncate the '.cpython-310' postfix which is 12 chars long: __init__
+        :: https://stackoverflow.com/a/636391/2199657
+        set BASE_FILENAME=!FILENAME:~0,-12!
+        :: __init__.pyc
         set pyc=!BASE_FILENAME!.pyc
+        :: Delete ..\__init__.py
         del !PARENT_DIR!\!BASE_FILENAME!.py
+        :: Copy to ..\__init__.pyc
         copy %%~f !PARENT_DIR!\!pyc! >nul
+        :: Delete __init__.pyc
         del %%~f
     ) ELSE (
         echo --SKIP !PARENT_DIR! under pip
