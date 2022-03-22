@@ -111,7 +111,7 @@ for %%a in (%CLI_SRC%\azure-cli %CLI_SRC%\azure-cli-core %CLI_SRC%\azure-cli-tel
    %BUILDING_DIR%\python.exe -m pip install --no-warn-script-location --no-cache-dir --no-deps .
    popd
 )
-%BUILDING_DIR%\python.exe -m pip install -r %CLI_SRC%\azure-cli\requirements.py3.windows.txt
+%BUILDING_DIR%\python.exe -m pip install --no-warn-script-location -r %CLI_SRC%\azure-cli\requirements.py3.windows.txt
 
 if %errorlevel% neq 0 goto ERROR
 
@@ -135,7 +135,7 @@ for /f %%f in ('dir /b /s *.pyc') do (
     set PARENT_DIR=%%~df%%~pf..
     echo !PARENT_DIR! | findstr /C:\Lib\site-packages\pip\ 1>nul
     if !errorlevel! neq  0 (
-        :: Only take the file name: e.g., (same below) __init__.cpython-310
+        :: Only take the file name without 'pyc' extension: e.g., (same below) __init__.cpython-310
         set FILENAME=%%~nf
         :: Truncate the '.cpython-310' postfix which is 12 chars long: __init__
         :: https://stackoverflow.com/a/636391/2199657
