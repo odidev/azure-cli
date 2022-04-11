@@ -274,6 +274,21 @@ jobs:
       TargetPath: $(Build.ArtifactStagingDirectory)
       ArtifactName: docker
 
+- job: BuildMultiarchDockerImage
+  displayName: Build multiarch Docker Image
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: CmdLine@2
+    displayName: 'Build multi arch image'
+    inputs:
+      script: |
+        docker login -u dockerhub_username -p dockerhub_password
+        docker run --privileged --rm tonistiigi/binfmt --install arm64
+        docker run --privileged --rm tonistiigi/binfmt
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 -t microsoft/azurecli:latest --push . 
+
 - job: TestDockerImage
   displayName: Test Docker Image
 
